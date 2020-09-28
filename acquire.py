@@ -1,36 +1,91 @@
-
 import pandas as pd
-import env
+import numpy as np
 import os
+from env import host, user, password
 
-def get_connection(db, user=env.user, host=env.host, password=env.password):
+#################### Acquire Mall Customers Data ##################
+
+def get_connection(db, user=user, host=host, password=password):
+    '''
+    This function uses my info from my env file to
+    create a connection url to access the Codeup db.
+    '''
     return f'mysql+pymysql://{user}:{password}@{host}/{db}'
 
-# 1. get_titanic_data: returns the titanic data from the codeup data science database as a pandas data frame.
-def get_titanic_data():
-    filename = 'titanic.csv'
-    if os.path.isfile(filename):
-        df = pd.read_csv(filename, index_col=0)
-        return df
+def new_mall_data():
+    '''
+    This function reads the mall customer data from the Codeup db into a df,
+    write it to a csv file, and returns the df. 
+    '''
+    sql_query = 'SELECT * FROM customers'
+    df = pd.read_sql(sql_query, get_connection('mall_customers'))
+    df.to_csv('mall_customers_df.csv')
+    return df
+
+def get_mall_data(cached=False):
+    '''
+    This function reads in mall customer data from Codeup database if cached == False 
+    or if cached == True reads in mall customer df from a csv file, returns df
+    '''
+    if cached or os.path.isfile('mall_customers_df.csv') == False:
+        df = new_mall_data()
     else:
-        df = pd.read_sql('SELECT * FROM passengers', get_connection('titanic_db'))
-        df.to_csv(filename)
-        return df
+        df = pd.read_csv('mall_customers_df.csv', index_col=0)
+    return df
+
+###################### Acquire Titanic Data ######################
+
     
-# 2. get_iris_data: returns the data from the iris_db on the codeup data science database as a pandas data frame. 
-# The returned data frame should include the actual name of the species in addition to the species_ids.
-def get_iris_data():
-    filename = 'iris.csv'
-    if os.path.isfile(filename):
-        df = pd.read_csv(filename, index_col=0)
-        return df
+def new_titanic_data():
+    '''
+    This function reads the titanic data from the Codeup db into a df,
+    write it to a csv file, and returns the df.
+    '''
+    sql_query = 'SELECT * FROM passengers'
+    df = pd.read_sql(sql_query, get_connection('titanic_db'))
+    df.to_csv('titanic_df.csv')
+    return df
+
+def get_titanic_data(cached=False):
+    '''
+    This function reads in titanic data from Codeup database if cached == False 
+    or if cached == True reads in titanic df from a csv file, returns df
+    '''
+    if cached or os.path.isfile('titanic_df.csv') == False:
+        df = new_titanic_data()
     else:
-        df = pd.read_sql('select * from measurements join species using (species_id);', get_connection('iris_db'))
-        df.to_csv(filename)
-        return df
+        df = pd.read_csv('titanic_df.csv', index_col=0)
+    return df
 
+###################### Acquire Iris Data ######################
 
-# 3. Once you've got your get_titanic_data and get_iris_data functions written, now it's time to add caching to them. 
-# To do this, edit the beginning of the function to check for a local filename like titanic.csv or iris.csv. 
-# If they exist, use the .csv file. If the file doesn't exist, then produce the SQL and pandas necessary to create a dataframe, 
-# then write the dataframe to a .csv file with the appropriate name
+def new_iris_data():
+    '''
+    This function reads the iris data from the Codeup db into a df,
+    writes it to a csv file, and returns the df.
+    '''
+    sql_query = """
+                SELECT species_id,
+                species_name,
+                sepal_length,
+                sepal_width,
+                petal_length,
+                petal_width
+                FROM measurements
+                JOIN species
+                USING(species_id)
+                """
+    df = pd.read_sql(sql_query, get_connection('iris_db'))
+    df.to_csv('iris_df.csv')
+    return df
+
+def get_iris_data(cached=False):
+    '''
+    This function reads in iris data from Codeup database if cached == False
+    or if cached == True reads in iris df from a csv file, returns df
+    '''
+    if cached or os.path.isfile('iris_df.csv') == False:
+        df = new_iris_data()
+    else:
+        df = pd.read_csv('iris_df.csv', index_col=0)
+    return df

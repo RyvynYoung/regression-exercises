@@ -12,8 +12,19 @@ from sklearn.preprocessing import LabelEncoder, OneHotEncoder, MinMaxScaler
 import warnings
 warnings.filterwarnings("ignore")
 
+
+def prep_mall_data(df):
+    """
+    This function takes acquired mall data, completes the prep
+    and splits the data into train, validate, and test datasets
+    """
+    df['is_female'] = (df.gender == 'Female').astype('int')
+    train_and_validate, test = train_test_split(df, test_size=.15, random_state=123)
+    train, validate = train_test_split(train_and_validate, test_size=.15, random_state=123)
+    return train, validate, test
+
 def drop_cols(df, col_list):
-    df = df.drop(columns=[col_list])
+    df = df.drop(columns=col_list)
 
 # prep the iris data
 def split_iris_dataset(df):
