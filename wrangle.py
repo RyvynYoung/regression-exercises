@@ -33,18 +33,10 @@ def get_telco2yr_data(cached=False):
         df = pd.read_csv('telco2yr.csv', index_col=0)
     return df
 
-def wrangle_telco():
-    """
-    This function takes acquired telco2yr data, completes the prep
-    and splits the data into train, validate, and test datasets
-    """
-    df = get_telco2yr_data()
-    df.total_charges = df.total_charges.str.replace(' ', '0').astype(float)
-    train_and_validate, test = train_test_split(df, test_size=.15, random_state=123)
-    train, validate = train_test_split(train_and_validate, test_size=.15, random_state=123)
-    return train, validate, test
+
 
 def add_scaled_columns(train, validate, test, scaler, columns_to_scale):
+    """This function scales the Telco2yr data"""
     new_column_names = [c + '_scaled' for c in columns_to_scale]
     scaler.fit(train[columns_to_scale])
 
@@ -63,7 +55,31 @@ def add_scaled_columns(train, validate, test, scaler, columns_to_scale):
     
     return train, validate, test
 
+def scale_telco(train, validate, test):
+    """This function provides the inputs and runs the add_scaled_columns function"""
+    train, validate, test = add_scaled_columns(
+    train,
+    validate,
+    test,
+    scaler=sklearn.preprocessing.MinMaxScaler(),
+    columns_to_scale=['monthly_charges', 'total_charges', 'tenure'],
+    )
+    return train, validate, test
+
+
+def wrangle_telco():
+    """
+    This function takes acquired telco2yr data, completes the prep
+    and splits the data into train, validate, and test datasets
+    """
+    df = get_telco2yr_data()
+    df.total_charges = df.total_charges.str.replace(' ', '0').astype(float)
+    train_and_validate, test = train_test_split(df, test_size=.15, random_state=123)
+    train, validate = train_test_split(train_and_validate, test_size=.15, random_state=123)
+    return scale_telco(train, validate, test)
+
 def inverse_scaled_columns(train, validate, test, scaler, columns_to_scale, columns_to_inverse):
+    """This is an experiment function to use inverse_transform"""
     new_column_names = [c + '_inverse' for c in columns_to_inverse]
     scaler.fit(train[columns_to_scale])
 
@@ -81,3 +97,13 @@ def inverse_scaled_columns(train, validate, test, scaler, columns_to_scale, colu
     ], axis=1)
     
     return train, validate, test
+
+# to call inverse_scaled_columns
+# itrain, ivalidate, itest = wrangle.inverse_scaled_columns(
+#     mmtrain,
+#     mmvalidate,
+#     mmtest,
+#     scaler=sklearn.preprocessing.MinMaxScaler(),
+#     columns_to_scale=['monthly_charges', 'total_charges', 'tenure'],
+#     columns_to_inverse=['monthly_charges_scaled', 'total_charges_scaled', 'tenure_scaled'],
+# )
