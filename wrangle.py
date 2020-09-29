@@ -107,3 +107,11 @@ def inverse_scaled_columns(train, validate, test, scaler, columns_to_scale, colu
 #     columns_to_scale=['monthly_charges', 'total_charges', 'tenure'],
 #     columns_to_inverse=['monthly_charges_scaled', 'total_charges_scaled', 'tenure_scaled'],
 # )
+
+
+def wrangle_grades():
+    grades = pd.read_csv("student_grades.csv")
+    grades.drop(columns="student_id", inplace=True)
+    grades.replace(r"^\s*$", np.nan, regex=True, inplace=True)
+    df = grades.dropna().astype("int")
+    return df
