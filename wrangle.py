@@ -4,6 +4,7 @@ import os
 from env import host, user, password
 import acquire
 from sklearn.model_selection import train_test_split
+import sklearn.preprocessing
 
 #################### Acquire Mall Customers Data ##################
 
@@ -76,6 +77,7 @@ def wrangle_telco():
     df.total_charges = df.total_charges.str.replace(' ', '0').astype(float)
     train_and_validate, test = train_test_split(df, test_size=.15, random_state=123)
     train, validate = train_test_split(train_and_validate, test_size=.15, random_state=123)
+    #return train, validate, test
     return scale_telco(train, validate, test)
 
 def inverse_scaled_columns(train, validate, test, scaler, columns_to_scale, columns_to_inverse):
